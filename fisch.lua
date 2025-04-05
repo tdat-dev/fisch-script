@@ -8,15 +8,12 @@ if game.PlaceId ~= 16732694052 then -- PlaceId của Fisch
     return
 end
 
--- Tải thư viện Rayfield để tạo GUI
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
-local Window = Rayfield:CreateWindow({
-    Name = "Fisch Pro Hub",
-    LoadingTitle = "Đang tải Fisch Pro Hub...",
-    LoadingSubtitle = "Tác giả: Grok",
-    ConfigurationSaving = {
-        Enabled = false,
-    }
+-- Tải thư viện Lunor Hub để tạo GUI
+local Lunor = loadstring(game:HttpGet('https://raw.githubusercontent.com/LunorHub/UI/main/source.lua'))()
+local Window = Lunor:CreateWindow({
+    Title = "Fisch v1.5.1 | discord.gg/lunor",
+    Subtitle = "Free Version",
+    Theme = "Dark",
 })
 
 -- Khai báo các dịch vụ và biến toàn cục
@@ -75,58 +72,29 @@ local function autoSell()
 end
 
 -- Tạo tab chính trong GUI
-local MainTab = Window:CreateTab("Tính Năng Chính", nil)
-local MainSection = MainTab:CreateSection("Chức năng tự động")
+local MainTab = Window:CreateTab("Main")
 
 -- Nút bật/tắt Auto Fish
-MainTab:CreateToggle({
-    Name = "Tự động câu cá",
-    CurrentValue = false,
-    Callback = function(Value)
-        autoFishEnabled = Value
-        if autoFishEnabled then
-            Rayfield:Notify({
-                Title = "Tự động câu cá",
-                Content = "Đã bật tính năng Auto Fish!",
-                Duration = 3,
-            })
-            spawn(autoFish) -- Chạy hàm Auto Fish trong luồng riêng
-        else
-            Rayfield:Notify({
-                Title = "Tự động câu cá",
-                Content = "Đã tắt tính năng Auto Fish!",
-                Duration = 3,
-            })
-        end
-    end,
-})
+MainTab:CreateToggle("Auto Fish", false, function(Value)
+    autoFishEnabled = Value
+    if autoFishEnabled then
+        Lunor:Notify("Auto Fish", "Enabled Auto Fish!")
+        spawn(autoFish) -- Chạy hàm Auto Fish trong luồng riêng
+    else
+        Lunor:Notify("Auto Fish", "Disabled Auto Fish!")
+    end
+end)
 
 -- Nút bật/tắt Auto Sell
-MainTab:CreateToggle({
-    Name = "Tự động bán cá",
-    CurrentValue = false,
-    Callback = function(Value)
-        autoSellEnabled = Value
-        if autoSellEnabled then
-            Rayfield:Notify({
-                Title = "Tự động bán cá",
-                Content = "Đã bật tính năng Auto Sell!",
-                Duration = 3,
-            })
-            spawn(autoSell) -- Chạy hàm Auto Sell trong luồng riêng
-        else
-            Rayfield:Notify({
-                Title = "Tự động bán cá",
-                Content = "Đã tắt tính năng Auto Sell!",
-                Duration = 3,
-            })
-        end
-    end,
-})
+MainTab:CreateToggle("Auto Sell", false, function(Value)
+    autoSellEnabled = Value
+    if autoSellEnabled then
+        Lunor:Notify("Auto Sell", "Enabled Auto Sell!")
+        spawn(autoSell) -- Chạy hàm Auto Sell trong luồng riêng
+    else
+        Lunor:Notify("Auto Sell", "Disabled Auto Sell!")
+    end
+end)
 
 -- Thông báo khi script khởi chạy thành công
-Rayfield:Notify({
-    Title = "Script đã sẵn sàng!",
-    Content = "Chào mừng bạn đến với Fisch Pro Hub bởi Grok.",
-    Duration = 5,
-})
+Lunor:Notify("Fisch v1.5.1", "Welcome to Fisch Pro Hub!")
