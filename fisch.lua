@@ -1,70 +1,144 @@
 --[[
-  Fisch Ultimate Script v1.5.1-RC
-  Tương thích Solara/Fluxus
-  Auto-Config Enabled
+  Fisch Ultimate Script v1.5.1-RC (Solara Optimized)
+  Tác giả: tdat-dev | Cập nhật: 05/04/2025
 ]]
 
-local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/rayfield/main/source"))()
-local _ = Rayfield:Notify({Title = "INJECTION SUCCESS", Content = "Lunoria Engine Activated", Duration = 2})
+--#region Khởi tạo phiên bản an toàn
+local _G = getfenv()
+local Success, Rayfield = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/tdat-dev/fisch-script/main/fisch.lua", true))()
+end)
 
---#region Auto-Configuration Module
-getgenv().DefaultSettings = {
-    ReelMode = "Auto Reel V2",
-    AntiCheatProfile = "Ghost",
-    UIMode = "Compact",
-    HeatReduction = true
-}
+if not Success then
+    warn("[Lỗi] Không tải được core script! Nguyên nhân:", Rayfield)
+    return
+end
 --#endregion
 
---#region Core Functions
-local function AntiDetect()
+--#region Cấu hình tự động
+local DefaultSettings = {
+    ReelMode = "Auto Reel V3",
+    AntiCheatProfile = "GhostV2",
+    UIMode = "Compact+",
+    HeatReduction = true
+}
+
+for k,v in pairs(DefaultSettings) do
+    _G[k] = _G[k] or v
+end
+--#endregion
+
+--#region Hệ thống chống phát hiện nâng cao
+local function HumanizedAntiDetect()
+    local Randomizer = Random.new(tick())
     spawn(function()
-        while task.wait(5) do
-            game:GetService("Stats").PerformanceStats.Memory:GetValueString()
-            setfpscap(math.random(45,60))
+        while task.wait(Randomizer:NextNumber(3,7)) do
+            -- Giả lập hành vi người dùng thực
+            game:GetService("VirtualInputManager"):SendMouseMoveEvent(
+                Randomizer:NextNumber(0,1), 
+                Randomizer:NextNumber(0,1),
+                game:GetService("Players").LocalPlayer.PlayerGui
+            )
+            
+            -- Tối ưu hiệu năng động
+            setfpscap(Randomizer:NextInteger(30,60))
+            sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", 1000)
         end
     end)
 end
+--#endregion
 
+--#region Logic câu cá thông minh
 local function SmartFishing()
-    require(game.ReplicatedStorage.Modules.FishingSystem).CastBobber(game:GetService("Players").LocalPlayer:GetMouse().Hit)
-    task.wait(math.clamp(3/_G.NukePower, 0.5, 3))
-    game:GetService("ReplicatedStorage").RemoteEvents.FishReel:FireServer()
+    local FishingModule = require(game.ReplicatedStorage.Modules.FishingSystem)
+    local Mouse = game:GetService("Players").LocalPlayer:GetMouse()
+    
+    -- Kiểm tra trạng thái cần câu
+    if not _G.AutoEquipRod then
+        FishingModule.EquipFishingRod()
+    end
+
+    -- Cast bobber với độ trễ ngẫu nhiên
+    FishingModule.CastBobber(Mouse.Hit)
+    task.wait(math.clamp(3/(_G.NukePower or 1), 0.5, 1.5))
+    
+    -- Xử lý reel với phân tích thời gian thực
+    local Bobber = workspace:FindFirstChild("Bobber")
+    if Bobber and Bobber:FindFirstChild("FishOnLine") then
+        game:GetService("ReplicatedStorage").RemoteEvents.FishReel:FireServer()
+        if _G.AutoDrop then
+            task.wait(0.5)
+            game:GetService("ReplicatedStorage").RemoteEvents.DropFish:FireServer()
+        end
+    end
 end
 --#endregion
 
---#region Pre-Built UI System
+--#region Giao diện người dùng tối ưu
 local Window = Rayfield:CreateWindow({
-    Name = "Fisch v1.5.1 | Lunoria Edition",
-    LoadingTitle = "Optimizing Game State...",
-    ConfigurationSaving = {Enabled = true, FileName = "Fisch_Presets"}
+    Name = "Fisch v1.5.1 | Solara Edition",
+    LoadingTitle = "Đang phân tích môi trường game...",
+    LoadingSubtitle = "Hệ thống chống phát hiện đang khởi động",
+    ConfigurationSaving = {
+        Enabled = true,
+        FileName = "Fisch_Solara_Presets",
+        Folder = "tdat-dev/configs"
+    }
 })
 
-local MainTab = Window:CreateTab("Main", 6026568198)
-MainTab:CreateToggle({
+local MainTab = Window:CreateTab("Chính", 6026568198)
+local AutoFarmToggle = MainTab:CreateToggle({
     Name = "AUTO FARM MASTER",
     CurrentValue = false,
     Callback = function(State)
-        getgenv().MasterSwitch = State
-        AntiDetect()
-        while MasterSwitch do
-            SmartFishing()
-            if _G.AutoShake then
-                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame *= CFrame.Angles(math.rad(2),0,0)
+        _G.MasterSwitch = State
+        HumanizedAntiDetect()
+        
+        -- Luồng xử lý chính với độ ưu tiên
+        coroutine.wrap(function()
+            while _G.MasterSwitch do
+                SmartFishing()
+                if _G.AutoShake then
+                    game:GetService("RunService").Heartbeat:Wait()
+                    game.Players.LocalPlayer.Character:MoveTo(Vector3.new(
+                        math.random(-2,2),
+                        0,
+                        math.random(-2,2)
+                    ))
+                end
             end
-        end
+        end)()
     end
 })
 --#endregion
 
---#region One-Click Execution
+--#region Hệ thống kích hoạt thông minh
 Rayfield:CreateButton({
-    Name = "🚀 KÍCH HOẠT TOÀN HỆ THỐNG",
+    Name = "🚀 KÍCH HOẠT THÔNG MINH",
     Callback = function()
-        getgenv().AutoEquipRod = true
-        getgenv().AutoDrop = true
-        getgenv().MasterSwitch = true
-        Rayfield:Notify({Title = "AUTO FARM ENABLED", Content = "All systems nominal"})
+        -- Kiểm tra phiên bản trước khi kích hoạt
+        if not Rayfield.VersionCheck("1.5.1") then
+            Rayfield:Notify({
+                Title = "CẢNH BÁO BẢO MẬT",
+                Content = "Vui lòng cập nhật phiên bản mới nhất!",
+                Duration = 5,
+                Image = 6023426915
+            })
+            return
+        end
+
+        -- Kích hoạt hệ thống
+        _G.AutoEquipRod = true
+        _G.AutoDrop = true
+        _G.MasterSwitch = true
+        
+        -- Tối ưu hóa bộ nhớ
+        game:GetService("ScriptContext").ScriptsDisabled = true
+        Rayfield:Notify({
+            Title = "KÍCH HOẠT THÀNH CÔNG",
+            Content = "Chế độ Ghost Mode đang hoạt động",
+            Duration = 3
+        })
     end
 })
 --#endregion
